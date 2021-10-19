@@ -1,14 +1,15 @@
 # Demo of Encoding a Fragmented MP4
 
-To build a service that manually encodes a series of uncompress .wav media segments into a separate initialization **.mp4** and media segment **.m4s** for broadcast via [MPEG-DASH](https://en.wikipedia.org/wiki/Dynamic_Adaptive_Streaming_over_HTTP).
+To build a service that manually encodes a series of uncompressed .wav media segments into a separate initialization **.mp4** and media segment **.m4s** for broadcast via [MPEG-DASH](https://en.wikipedia.org/wiki/Dynamic_Adaptive_Streaming_over_HTTP).
 
 I'm using [ffmpeg](https://www.ffmpeg.org/) to compress the .wav to .aac
 and [sannies/mp4parser](https://github.com/sannies/mp4parser) to mux the aac audio into an **.m4s** media fragment.
 
+Here's my custom [ChunkMp4Builder](src/main/java/com/charneykaye/ChunkMp4Builder.java) class.
+
 Here's a .yaml representation of the **.m4s** media fragment I'm trying to create:
 
-
-```yaml
+```YAML
 SegmentTypeBox:
   majorBrand: msdh
   minorVersion: 0
@@ -69,7 +70,7 @@ MovieFragmentBox:
       firstSampleFlags: null
 ```
 
-The MP4 is created without error. But when I try to use IsoFile to read it back, I see:
+My implementation creates an MP4 without error. But when I try to use IsoFile to read it back, I see:
 
 ```
 A cast to int has gone wrong. Please contact the mp4parser discussion group (3724673092)
