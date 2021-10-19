@@ -25,8 +25,8 @@ import static org.mp4parser.tools.CastUtils.l2i;
 /**
  Creates a plain MP4 file from a video. Plain as plain can be.
  */
-public class ChunkMp4Builder implements Mp4Builder {
-    private static final Logger LOG = LoggerFactory.getLogger(ChunkMp4Builder.class);
+public class CustomFragmentMp4Builder implements Mp4Builder {
+    private static final Logger LOG = LoggerFactory.getLogger(CustomFragmentMp4Builder.class);
     private static final String BRAND_MSDH = "msdh";
     private static final String BRAND_MSIX = "msix";
     private final long subsegmentDuration;
@@ -40,7 +40,7 @@ public class ChunkMp4Builder implements Mp4Builder {
     HashMap<Track, long[]> track2SampleSizes = new HashMap<>();
     private Fragmenter fragmenter;
 
-    public ChunkMp4Builder(
+    public CustomFragmentMp4Builder(
             int sampleRate,
             int lengthSeconds,
             long sequenceNumber,
@@ -347,7 +347,7 @@ public class ChunkMp4Builder implements Mp4Builder {
 
             chunkSizes[i] = l2i(end - start);
         }
-        assert ChunkMp4Builder.this.track2Sample.get(track).size() == sum(chunkSizes) : "The number of samples and the sum of all chunk lengths must be equal";
+        assert CustomFragmentMp4Builder.this.track2Sample.get(track).size() == sum(chunkSizes) : "The number of samples and the sum of all chunk lengths must be equal";
         return chunkSizes;
     }
 
