@@ -61,7 +61,7 @@ public class ChunkMp4BuilderTest {
         m4sFileName = String.format("%s.m4s", key);
         m4sFilePath = String.format("%s%s.m4s", tempFilePathPrefix, key);
         aacFilePath = String.format("%s%s.aac", tempFilePathPrefix, key);
-        wavFilePath = String.format("%s%s-%s.wav", tempFilePathPrefix, SHIP_KEY, this.sequenceNumber);
+        wavFilePath = getResourceFile("test5-151304042.wav").getAbsolutePath();
     }
 
     /**
@@ -178,18 +178,17 @@ public class ChunkMp4BuilderTest {
         }
 
         var loader = ChunkMp4BuilderTest.class.getClassLoader();
-        var input = loader.getResourceAsStream("ogg_decoding/test5-1633586832900943.ogg");
-        assertFileMatchesResourceFile("/tmp/test5-151304042.wav", "chunk_reference_outputs/test5-151304042.wav");
+        var input = loader.getResourceAsStream("test5-1633586832900943.ogg");
 
 /*
   TODO assertions
-    assertFileSizeToleranceFromResourceFile("/tmp/test5-128kbps-151304042.m4s", "chunk_reference_outputs/test5-128kbps-151304042.m4s");
-    assertFileSizeToleranceFromResourceFile("/tmp/test5-128kbps-IS.mp4", "chunk_reference_outputs/test5-128kbps-IS.mp4");
+    assertFileSizeToleranceFromResourceFile("/tmp/test5-128kbps-151304042.m4s", "test5-128kbps-151304042.m4s");
+    assertFileSizeToleranceFromResourceFile("/tmp/test5-128kbps-IS.mp4", "test5-128kbps-IS.mp4");
 */
 
 
         var boxesActual = getMp4Boxes("/tmp/test5-128k-151304042.m4s");
-        var boxesExpected = getMp4Boxes(new InternalResource("chunk_reference_outputs/test5-128kbps-151304042.m4s").getFile().getAbsolutePath());
+        var boxesExpected = getMp4Boxes(new InternalResource("test5-128kbps-151304042.m4s").getFile().getAbsolutePath());
 
         LOG.info("EXPECTED");
         for (var box : boxesExpected) LOG.info("{}", box.toString());
