@@ -13,7 +13,7 @@ For example, here's the custom [CustomFragmentMp4Builder.java](src/main/java/com
 
 The objective is to build an **.m4s** fragment comprising the box types `SegmentTypeBox`, `SegmentIndexBox`, and `MovieFragmentBox`. As For reference, I have used *mp4parser* to inspect an **.m4s** fragment that was generated via `ffmpeg -f hls`. This specification is available [here as a .yaml file](src/test/resources/test5-128k-151304042-ffmpeg.yaml)
 
-My implementation creates an MP4 without error. But when I try to use IsoFile to read it back, I see:
+My implementation creates an MP4 without error. But, when the unit test attempts to read the file that the ChunkMp4Builder just wrote to a temp folder:
 
 ```
 java.lang.RuntimeException: A cast to int has gone wrong. Please contact the mp4parser discussion group (3724673092)
@@ -31,10 +31,12 @@ The expected box types `SegmentTypeBox`, `SegmentIndexBox`, and `MovieFragmentBo
 
 [![The expected box types `SegmentTypeBox`, `SegmentIndexBox`, and `MovieFragmentBox` do appear in the output][2]][2]
 
-But, the stack traced error above happens when the unit test attempted to read the file that the ChunkMp4Builder just wrote to a temp folder. There seems to be a box of an unknown type, appearing at the end of the file.
+However, at the end of the file appears a box of an unknown type:
 
 [![There seems to be a box of an unknown type, appearing at the end of the file.][3]][3]
 
+
+
+
 [2]: https://i.stack.imgur.com/aAmyt.png
 [3]: https://i.stack.imgur.com/pHJeJ.png
-
