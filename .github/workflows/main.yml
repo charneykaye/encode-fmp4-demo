@@ -18,6 +18,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get -y install ffmpeg
+          sudo apt-get -y install gpac
 
       - name: Setup JDK 16
         uses: actions/setup-java@v1

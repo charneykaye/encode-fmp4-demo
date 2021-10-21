@@ -20,19 +20,6 @@ import static org.junit.Assert.assertTrue;
 public abstract class TestBase {
 
     /**
-     Assert that the given test output file matches the reference file
-
-     @param targetFilePath    to test
-     @param referenceFilePath as source of truth
-     @throws IOException on failure to read
-     */
-    protected void assertFileMatchesResourceFile(String targetFilePath, String referenceFilePath) throws IOException {
-        //noinspection UnstableApiUsage
-        assertTrue("Demo output " + targetFilePath + " does not match reference audio for " + referenceFilePath + "!",
-                com.google.common.io.Files.equal(new File(targetFilePath), getResourceFile(referenceFilePath)));
-    }
-
-    /**
      Assert that the given test output file is within +/- 2% of the same size as the reference file@param referenceFilePath as source of truth
 
      @param actualFilePath to test
@@ -80,10 +67,10 @@ public abstract class TestBase {
 
     /**
      Compute the command to run ffmpeg for this chunk printing@param wavFilePath
-
      */
     protected void encodeAAC(String wavFilePath, String bitrateName, String aacFilePath) throws IOException, InterruptedException {
-        var cmd = String.join(" ", ImmutableList.of(
+        Files.deleteIfExists(Path.of(aacFilePath));
+        execute(String.join(" ", ImmutableList.of(
                 "ffmpeg",
                 "-i", wavFilePath,
                 "-ac", "2",
@@ -91,16 +78,7 @@ public abstract class TestBase {
                 "-b:a", bitrateName,
                 "-minrate", bitrateName,
                 "-maxrate", bitrateName,
-                aacFilePath));
-        Files.deleteIfExists(Path.of(aacFilePath));
-        var proc = Runtime.getRuntime().exec(cmd);
-        String line;
-        List<String> output = Lists.newArrayList();
-        BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-        while ((line = stdError.readLine()) != null) output.add(line);
-        if (0 != proc.waitFor()) {
-            throw new IOException(String.format("Failed: %s\n\n%s", cmd, formatMultiline(output.toArray())));
-        }
+                aacFilePath)));
     }
 
 
@@ -115,5 +93,23 @@ public abstract class TestBase {
         var dataSource = Files.newByteChannel(Path.of(path));
         var isoFile = new IsoFile(dataSource);
         return isoFile.getBoxes();
+    }
+
+    /**
+     Execute the given command
+
+     @param cmd command to execute
+     @throws IOException          on failure
+     @throws InterruptedException on failure
+     */
+    protected void execute(String cmd) throws IOException, InterruptedException {
+        var proc = Runtime.getRuntime().exec(cmd);
+        String line;
+        List<String> output = Lists.newArrayList();
+        BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+        while ((line = stdError.readLine()) != null) output.add(line);
+        if (0 != proc.waitFor()) {
+            throw new IOException(String.format("Failed: %s\n\n%s", cmd, formatMultiline(output.toArray())));
+        }
     }
 }

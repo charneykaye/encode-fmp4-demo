@@ -67,7 +67,6 @@ public class DefaultMp4BuilderTest extends TestBase {
 
         LOG.debug("will construct M4S from AAC");
         try {
-            Files.deleteIfExists(Path.of(m4sFilePath));
             constructM4S();
             LOG.info("did construct M4S at {} to {}", bitrate, m4sFilePath);
         } catch (Exception e) {
@@ -83,7 +82,7 @@ public class DefaultMp4BuilderTest extends TestBase {
         for (var box : boxesActual) LOG.info("{}", box.toString());
 
 // TODO        assertFileSizeToleranceFromResourceFile(mp4InitFileName, "/tmp/" + mp4InitFileName);
-        assertFileSizeToleranceFromResourceFile("test5-128k-151304042.m4s", "/tmp/test5-128k-151304042.m4s");
+        assertFileSizeToleranceFromResourceFile("test5-128k-151304042-default.m4s", "/tmp/test5-128k-151304042-default.m4s");
     }
 
     /**
@@ -92,6 +91,7 @@ public class DefaultMp4BuilderTest extends TestBase {
      @throws IOException on failure
      */
     private void constructM4S() throws IOException {
+        Files.deleteIfExists(Path.of(m4sFilePath));
         AACTrackImpl aacTrack = new AACTrackImpl(new FileDataSourceImpl(aacFilePath));
         Movie movie = new Movie();
         movie.addTrack(aacTrack);

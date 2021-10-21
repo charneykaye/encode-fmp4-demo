@@ -1,58 +1,61 @@
 // Copyright (c) Charney Kaye Inc. (https://charneykaye.com) All Rights Reserved.
 package com.charneykaye;
 
+import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.mp4parser.Container;
-import org.mp4parser.muxer.FileDataSourceImpl;
-import org.mp4parser.muxer.Movie;
-import org.mp4parser.muxer.tracks.AACTrackImpl;
+import org.mp4parser.boxes.iso14496.part12.MovieFragmentBox;
+import org.mp4parser.boxes.iso14496.part12.MovieFragmentHeaderBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static org.joda.time.DateTimeConstants.MILLIS_PER_SECOND;
+import static org.junit.Assert.assertEquals;
 
+
+@SuppressWarnings("FieldCanBeLocal")
 @RunWith(MockitoJUnitRunner.class)
-public class CustomFragmentMp4BuilderTest extends TestBase {
-    private static final Logger LOG = LoggerFactory.getLogger(CustomFragmentMp4BuilderTest.class);
+public class MP4BoxTest extends TestBase {
+    private static final Logger LOG = LoggerFactory.getLogger(MP4BoxTest.class);
     private static final String K = "k";
-    private static final String SHIP_KEY = "test5";
+    private static final String shipKey = "test5";
+    private static final int bitrate = 128000;
+    private static final int lengthSeconds = 10;
+    private static final int sampleRate = 48000;
+    private static final int sequenceNumber = 151304042;
+    private static final long dspBufferSize = 1024;
     private final String aacFilePath;
     private final String bitrateName;
     private final String m4sFileName;
     private final String m4sFilePath;
     private final String wavFilePath;
-    private final int bitrate = 128000;
-    private final int sequenceNumber = 151304042;
+    private final String tempPlaylistPath;
+    private final String segmentName;
 
-    private CustomFragmentMp4Builder subject;
-
-    public CustomFragmentMp4BuilderTest(
+    public MP4BoxTest(
     ) {
         bitrateName = String.format("%d%s", (int) Math.floor((double) bitrate / 1000), K);
 // TODO        String mp4InitFileName = String.format("%s-%s-IS.mp4", SHIP_KEY, bitrateName);
         String tempFilePathPrefix = "/tmp/";
 // TODO        String mp4InitFilePath = String.format("%s%s", tempFilePathPrefix, mp4InitFileName);
 
-        String key = String.format("%s-%s-%d", SHIP_KEY, bitrateName, this.sequenceNumber);
+        String key = String.format("%s-%s-%d", shipKey, bitrateName, sequenceNumber);
         m4sFileName = String.format("%s.m4s", key);
-        m4sFilePath = String.format("%s%s.m4s", tempFilePathPrefix, key);
+        m4sFilePath = String.format("%s%s-1.m4s", tempFilePathPrefix, shipKey);
+        tempPlaylistPath = String.format("%s%s", tempFilePathPrefix, shipKey);
+        segmentName = String.format("%s-", shipKey);
         aacFilePath = String.format("%s%s.aac", tempFilePathPrefix, key);
         wavFilePath = getResourceFile("test5-151304042.wav").getAbsolutePath();
     }
 
     @Before
     public void setUp() {
-        long dspBufferSize = 1024;
-        int lengthSeconds = 10;
-        subject = new CustomFragmentMp4Builder(bitrate, lengthSeconds, sequenceNumber, dspBufferSize);
     }
 
     @Test
@@ -74,15 +77,13 @@ public class CustomFragmentMp4BuilderTest extends TestBase {
             LOG.error("Failed to construct M4S at {} to {}", bitrate, m4sFilePath, e);
         }
 
-        var boxesActual = getMp4Boxes("/tmp/" + m4sFileName);
+        var boxesActual = getMp4Boxes(m4sFilePath);
         LOG.info("ACTUAL");
         for (var box : boxesActual) LOG.info("{}", box.toString());
 
-        // TODO         var boxesExpected = getMp4Boxes(getResourceFile(m4sFileName).getAbsolutePath());
-// TODO        LOG.info("EXPECTED");
-// TODO        for (var box : boxesExpected) LOG.info("{}", box.toString());
-
-        assertFileSizeToleranceFromResourceFile("test5-128k-151304042.m4s", "/tmp/test5-128k-151304042.m4s");
+        MovieFragmentBox mfb = (MovieFragmentBox) boxesActual.get(2);
+        MovieFragmentHeaderBox mfhb = (MovieFragmentHeaderBox) mfb.getBoxes().get(0);
+        assertEquals(sequenceNumber, mfhb.getSequenceNumber());
     }
 
     /**
@@ -90,15 +91,20 @@ public class CustomFragmentMp4BuilderTest extends TestBase {
 
      @throws IOException on failure
      */
-    private void constructM4S() throws IOException {
+    private void constructM4S() throws IOException, InterruptedException {
         Files.deleteIfExists(Path.of(m4sFilePath));
-        AACTrackImpl aacTrack = new AACTrackImpl(new FileDataSourceImpl(aacFilePath));
-        Movie movie = new Movie();
-        movie.addTrack(aacTrack);
-        Container mp4file = subject.build(movie);
-        FileChannel fc = new FileOutputStream(m4sFilePath).getChannel();
-        mp4file.writeContainer(fc);
-        fc.close();
+        execute(String.join(" ", ImmutableList.of(
+                "MP4Box",
+                "-add", aacFilePath,
+                "-dash", String.valueOf(lengthSeconds * MILLIS_PER_SECOND),
+                "-frag", String.valueOf(lengthSeconds * MILLIS_PER_SECOND),
+                "-idx", String.valueOf(sequenceNumber - 1),
+                "-moof-sn", String.valueOf(sequenceNumber - 1),
+                "-out", tempPlaylistPath,
+                "-profile", "live",
+                "-segment-name", segmentName,
+                "-v",
+                "/tmp:period=%s", String.valueOf(sequenceNumber))));
     }
 
 }
