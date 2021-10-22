@@ -40,7 +40,7 @@ However, at the end of the file appears a box of an unknown type:
 
 ## Fragmented MP4 has moof, not moov
 
-Solved by @aergistal on Stack Overflow
+Solved by [@aergistal](https://stackoverflow.com/users/4663670/aergistal) on Stack Overflow
 https://stackoverflow.com/a/69668111/1335245
 
 See diagram of Fragmented MP4 (fmp4): https://bitmovin.com/wp-content/uploads/2019/07/image7.png
