@@ -37,9 +37,7 @@ public class DefaultMp4BuilderTest extends TestBase {
     public DefaultMp4BuilderTest(
     ) {
         bitrateName = String.format("%d%s", (int) Math.floor((double) bitrate / 1000), K);
-// TODO        String mp4InitFileName = String.format("%s-%s-IS-default.mp4", SHIP_KEY, bitrateName);
         String tempFilePathPrefix = "/tmp/";
-// TODO        String mp4InitFilePath = String.format("%s%s", tempFilePathPrefix, mp4InitFileName);
 
         int sequenceNumber = 151304042;
         String key = String.format("%s-%s-%d", SHIP_KEY, bitrateName, sequenceNumber);
@@ -81,7 +79,6 @@ public class DefaultMp4BuilderTest extends TestBase {
         LOG.info("ACTUAL");
         for (var box : boxesActual) LOG.info("{}", box.toString());
 
-// TODO        assertFileSizeToleranceFromResourceFile(mp4InitFileName, "/tmp/" + mp4InitFileName);
         assertFileSizeToleranceFromResourceFile("test5-128k-151304042-default.m4s", "/tmp/test5-128k-151304042-default.m4s");
     }
 

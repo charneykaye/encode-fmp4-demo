@@ -37,9 +37,7 @@ public class CustomFragmentMp4BuilderTest extends TestBase {
     public CustomFragmentMp4BuilderTest(
     ) {
         bitrateName = String.format("%d%s", (int) Math.floor((double) bitrate / 1000), K);
-// TODO        String mp4InitFileName = String.format("%s-%s-IS.mp4", SHIP_KEY, bitrateName);
         String tempFilePathPrefix = "/tmp/";
-// TODO        String mp4InitFilePath = String.format("%s%s", tempFilePathPrefix, mp4InitFileName);
 
         String key = String.format("%s-%s-%d", SHIP_KEY, bitrateName, this.sequenceNumber);
         m4sFileName = String.format("%s.m4s", key);
@@ -77,10 +75,6 @@ public class CustomFragmentMp4BuilderTest extends TestBase {
         var boxesActual = getMp4Boxes("/tmp/" + m4sFileName);
         LOG.info("ACTUAL");
         for (var box : boxesActual) LOG.info("{}", box.toString());
-
-        // TODO         var boxesExpected = getMp4Boxes(getResourceFile(m4sFileName).getAbsolutePath());
-// TODO        LOG.info("EXPECTED");
-// TODO        for (var box : boxesExpected) LOG.info("{}", box.toString());
 
         assertFileSizeToleranceFromResourceFile("test5-128k-151304042.m4s", "/tmp/test5-128k-151304042.m4s");
     }
