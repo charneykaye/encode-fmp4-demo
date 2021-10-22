@@ -38,5 +38,43 @@ However, at the end of the file appears a box of an unknown type:
 
 
 
+## Fragmented MP4 has moof, not moov
+
+Solved by @aergistal on Stack Overflow
+https://stackoverflow.com/a/69668111/1335245
+
+See diagram of Fragmented MP4 (fmp4): https://bitmovin.com/wp-content/uploads/2019/07/image7.png
+
+Your `m4s` segments are invalid due to an incorrect `mdat` atom size.
+
+For example in `test5-128k-151304042.m4s` the `mdat` is marked as having a length of 16 bytes but there is data at the end and file size is 164884.
+
+The parser then attempts to read an invalid offset. `avc5` is not an atom but actually part of the string "Lavc58.54.100". The length read as 3724673100 is also invalid and greater than the max for a 32-bit integer, hence the invalid cast to int.
+
+[![hex dump][1]][1]
+
+
+----------
+
+In your implementation you have:
+
+    ParsableBox moov = createMovieFragmentBox(movie);
+    isoFile.addBox(moov);
+    List<SampleSizeBox> stszs = Path.getPaths(moov, "trak/mdia/minf/stbl/stsz");
+    // ...
+
+    protected MovieFragmentBox createMovieFragmentBox(Movie movie) {
+        MovieFragmentBox mfb = new MovieFragmentBox();
+        // ...
+    }
+
+This is not a `moov` atom, it's a `moof`. There is no `stsz` in there and the sum of your sample sizes is 0 so the total calculated size of the `mdat` is 16 + 0.
+
+The `moov` is supposed to be in the initialization segment.
+
+
+  [1]: https://i.stack.imgur.com/4z7gE.jpg
+
+
 [2]: https://i.stack.imgur.com/aAmyt.png
 [3]: https://i.stack.imgur.com/pHJeJ.png
