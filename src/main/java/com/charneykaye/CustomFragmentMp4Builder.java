@@ -61,14 +61,6 @@ public class CustomFragmentMp4Builder implements Mp4Builder {
         return rc;
     }
 
-    private static long sum(long[] ls) {
-        long rc = 0;
-        for (long l : ls) {
-            rc += l;
-        }
-        return rc;
-    }
-
     /**
      {@inheritDoc}
      */
@@ -99,14 +91,13 @@ public class CustomFragmentMp4Builder implements Mp4Builder {
         for (Track track : movie.getTracks()) {
             chunks.put(track, getChunkSizes(track));
         }
-        ParsableBox moov = createMovieFragmentBox(movie);
-        isoFile.addBox(moov);
-        List<SampleSizeBox> stszs = Path.getPaths(moov, "trak/mdia/minf/stbl/stsz");
+        ParsableBox moof = createMovieFragmentBox(movie);
+        isoFile.addBox(moof);
+        List<TrackRunBox.Entry> entries = ((TrackRunBox) Path.getPath(moof, "traf/trun")).getEntries();
 
         long contentSize = 0;
-        for (SampleSizeBox stsz : stszs) {
-            contentSize += sum(stsz.getSampleSizes());
-        }
+        for (TrackRunBox.Entry traf : entries)
+            contentSize += traf.getSampleSize();
         LOG.debug("About to create mdat");
         InterleaveChunkMdat mdat = new InterleaveChunkMdat(movie, chunks, contentSize);
 

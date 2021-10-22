@@ -41,9 +41,7 @@ public class MP4BoxTest extends TestBase {
     public MP4BoxTest(
     ) {
         bitrateName = String.format("%d%s", (int) Math.floor((double) bitrate / 1000), K);
-// TODO        String mp4InitFileName = String.format("%s-%s-IS.mp4", SHIP_KEY, bitrateName);
         String tempFilePathPrefix = "/tmp/";
-// TODO        String mp4InitFilePath = String.format("%s%s", tempFilePathPrefix, mp4InitFileName);
 
         String key = String.format("%s-%s-%d", shipKey, bitrateName, sequenceNumber);
         m4sFileName = String.format("%s.m4s", key);
