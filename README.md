@@ -2,18 +2,82 @@ https://stackoverflow.com/questions/69625970/java-mp4parser-to-create-m4s-fragme
 
 [![Production CI](https://github.com/charneykaye/encode-fmp4-demo/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/charneykaye/encode-fmp4-demo/actions/workflows/main.yml)
 
-# Demo of Encoding a Fragmented MP4
+## Comparing methods of MP4 creation
 
-This use case is a service that manually encodes a series of uncompressed .wav media segments into **.m4s** fragments for broadcast via [MPEG-DASH](https://en.wikipedia.org/wiki/Dynamic_Adaptive_Streaming_over_HTTP), using [ffmpeg](https://www.ffmpeg.org/) to compress the .wav to .aac
+The first example using MP4 box works, insofar as I am able to generate an initializing MP4 + series of fragment M4s
+files which can then be concatenated to form a playable MPEG4 stream.
+
+Note: it's a requirement for this use case that each media segment be encoded from individually generated source
+segments, versus using a tool such as MP4Box to stream from a continuous audio source.
+
+## via Java mp4parser (malformed)
+
+**Attempts to manually build media segments via mp4parser are still failing overall,** because the fragments written by
+my [CustomFragmentMp4Builder.java](src/main/java/com/charneykaye/CustomFragmentMp4Builder.java) used below are
+malformed. But I'm having a difficult time understanding *how* exactly they are malformed.
+
+```java
+Files.deleteIfExists(Path.of(m4sFilePath));
+AACTrackImpl aacTrack=new AACTrackImpl(new FileDataSourceImpl(aacFilePath));
+Movie movie=new Movie();
+movie.addTrack(aacTrack);
+Container mp4file=new CustomFragmentMp4Builder(hz,seconds,seqNum,bufferSize).build(movie);
+FileChannel fc=new FileOutputStream(m4sFilePath).getChannel();
+mp4file.writeContainer(fc);
+fc.close();
+```
+
+- [test5.mpd](notes/via-java-mp4parser/test5.mpd)
+- [test5-128k-163493804.m4s](notes/via-java-mp4parser/test5-128k-163493804.m4s)
+- [test5-128k-163493805.m4s](notes/via-java-mp4parser/test5-128k-163493805.m4s)
+- [test5-128k-163493806.m4s](notes/via-java-mp4parser/test5-128k-163493806.m4s)
+- [test5-128k-IS.mp4](notes/via-java-mp4parser/test5-128k-IS.mp4)
+
+## via MP4Box (ok)
+
+```shell
+MP4Box \
+  -profile live \
+  -add aacFilePath \
+  -dash 10000 \
+  -frag 10000 \
+  -idx ${NUM} \
+  -moof-sn ${NUM} \
+  -out test5.mpd \
+  -segment-name test5-128k- \
+  -segment-ext m4s \
+  -single-traf \
+  -subsegs-per-sidx 0 \
+  -daisy-chain \
+  -single-segment \
+  /tmp
+```
+
+- [test5.mpd](notes/via-mp4box/test5.mpd)
+- [test5-128k-163494320.m4s](notes/via-mp4box/test5-128k-163494320.m4s)
+- [test5-128k-163494321.m4s](notes/via-mp4box/test5-128k-163494321.m4s)
+- [test5-128k-163494322.m4s](notes/via-mp4box/test5-128k-163494322.m4s)
+- [test5-128k-IS.mp4](notes/via-mp4box/test5-128k-IS.mp4)
+
+## Demo of Encoding a Fragmented MP4
+
+This use case is a service that manually encodes a series of uncompressed .wav media segments into **.m4s** fragments
+for broadcast via [MPEG-DASH](https://en.wikipedia.org/wiki/Dynamic_Adaptive_Streaming_over_HTTP),
+using [ffmpeg](https://www.ffmpeg.org/) to compress the .wav to .aac
 and [sannies/mp4parser](https://github.com/sannies/mp4parser) to assemble the aac audio into an **.m4s** media fragment.
 
 I created this public GitHub project to reproduce the issue in its entirety.
 
-For example, here's the custom [CustomFragmentMp4Builder.java](src/main/java/com/charneykaye/CustomFragmentMp4Builder.java) class.
+For example, here's the
+custom [CustomFragmentMp4Builder.java](src/main/java/com/charneykaye/CustomFragmentMp4Builder.java) class.
 
-The objective is to build an **.m4s** fragment comprising the box types `SegmentTypeBox`, `SegmentIndexBox`, and `MovieFragmentBox`. As For reference, I have used *mp4parser* to inspect an **.m4s** fragment that was generated via `ffmpeg -f hls`. This specification is available [here as a .yaml file](src/test/resources/test5-128k-151304042-ffmpeg.yaml)
+The objective is to build an **.m4s** fragment comprising the box types `SegmentTypeBox`, `SegmentIndexBox`,
+and `MovieFragmentBox`. As For reference, I have used *mp4parser* to inspect an **.m4s** fragment that was generated
+via `ffmpeg -f hls`. This specification is
+available [here as a .yaml file](src/test/resources/test5-128k-151304042-ffmpeg.yaml)
 
-My implementation creates an MP4 without error. But, when the unit test attempts to read the file that the ChunkMp4Builder just wrote to a temp folder:
+My implementation creates an MP4 without error. But, when the unit test attempts to read the file that the
+ChunkMp4Builder just wrote to a temp folder:
 
 ```
 java.lang.RuntimeException: A cast to int has gone wrong. Please contact the mp4parser discussion group (3724673092)
@@ -77,4 +141,5 @@ The `moov` is supposed to be in the initialization segment.
 
 
 [2]: https://i.stack.imgur.com/aAmyt.png
+
 [3]: https://i.stack.imgur.com/pHJeJ.png
