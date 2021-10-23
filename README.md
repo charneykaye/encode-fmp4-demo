@@ -1,5 +1,3 @@
-https://stackoverflow.com/questions/69625970/java-mp4parser-to-create-m4s-fragment
-
 [![Production CI](https://github.com/charneykaye/encode-fmp4-demo/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/charneykaye/encode-fmp4-demo/actions/workflows/main.yml)
 
 ## Lab Notes: Individually Encoding Fragmented MP4 Segments
@@ -20,6 +18,8 @@ via `ffmpeg -f hls`. This specification is
 available [here as a .yaml file](src/test/resources/test5-128k-151304042-ffmpeg.yaml)
 
 ## Fragment sequence discontinuity
+
+https://stackoverflow.com/questions/69686039/java-mp4parser-fragment-sequence-discontinuity
 
 The [log](notes/via-java-mp4parser-v2/ChunkFragmentM4sBuilderTest.log.txt) is
 from [ChunkFragmentM4sBuilderTest.java](src/test/java/com/charneykaye/ChunkFragmentM4sBuilderTest.java) which results in
