@@ -60,7 +60,7 @@ public class ChunkFragmentM4sBuilderTest extends TestBase {
     public void setUp() {
         long dspBufferSize = 1024;
         int lengthSeconds = 10;
-        subject = new ChunkFragmentM4sBuilder(sampleRate, lengthSeconds, sequenceNumber);
+        subject = new ChunkFragmentM4sBuilder(sequenceNumber);
     }
 
     @Test
