@@ -2,6 +2,26 @@ https://stackoverflow.com/questions/69625970/java-mp4parser-to-create-m4s-fragme
 
 [![Production CI](https://github.com/charneykaye/encode-fmp4-demo/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/charneykaye/encode-fmp4-demo/actions/workflows/main.yml)
 
+## Lab Notes: Individually Encoding Fragmented MP4 Segments
+
+This use case is a service that manually encodes a series of uncompressed .wav media segments into **.m4s** fragments
+for broadcast via [MPEG-DASH](https://en.wikipedia.org/wiki/Dynamic_Adaptive_Streaming_over_HTTP),
+using [ffmpeg](https://www.ffmpeg.org/) to compress the .wav to .aac
+and [sannies/mp4parser](https://github.com/sannies/mp4parser) to assemble the aac audio into an **.m4s** media fragment.
+
+I created this public GitHub project to reproduce the issue in its entirety.
+
+For example, here's the
+custom [ChunkFragmentM4sBuilder.java](src/main/java/com/charneykaye/ChunkFragmentM4sBuilder.java) class.
+
+The objective is to build an **.m4s** fragment comprising the box types `SegmentTypeBox`, `SegmentIndexBox`,
+and `MovieFragmentBox`. As For reference, I have used *mp4parser* to inspect an **.m4s** fragment that was generated
+via `ffmpeg -f hls`. This specification is
+available [here as a .yaml file](src/test/resources/test5-128k-151304042-ffmpeg.yaml)
+
+
+
+
 ## Comparing methods of MP4 creation
 
 The first example using MP4 box works, insofar as I am able to generate an initializing MP4 + series of fragment M4s
@@ -10,16 +30,22 @@ files which can then be concatenated to form a playable MPEG4 stream.
 Note: it's a requirement for this use case that each media segment be encoded from individually generated source
 segments, versus using a tool such as MP4Box to stream from a continuous audio source.
 
-## via Java mp4parser (malformed)
-
 **Attempts to manually build media segments via mp4parser are still failing overall,** because the fragments written by
-my [ChunkFragmentM4sBuilder.java](src/main/java/com/charneykaye/ChunkFragmentM4sBuilder.java) used below are
-malformed. But I'm having a difficult time understanding *how* exactly they are malformed.
+my [ChunkFragmentM4sBuilder.java](src/main/java/com/charneykaye/ChunkFragmentM4sBuilder.java) used below are malformed.
+But I'm having a difficult time understanding *how* exactly they are malformed.
 
-It's been helpful for me to compare these two test outputs:
+It's been helpful for me to compare the two test logs side by
+side, [ChunkFragmentM4sBuilderTest.log.txt](notes/via-java-mp4parser/ChunkFragmentM4sBuilderTest.log.txt)
+and [MP4BoxTest.log.txt](notes/via-mp4box/MP4BoxTest.log.txt).
 
-  * [Output](notes/via-mp4box/MP4BoxTest.log.txt) from [Mp4parserTest.java](src/test/java/com/charneykaye/Mp4parserTest.java) 
-  * [Output](notes/via-java-mp4parser/Mp4parserTest.log.txt) from [MP4BoxTest.java](src/test/java/com/charneykaye/MP4BoxTest.java) 
+### via Java mp4parser (malformed)
+
+The former [log](notes/via-java-mp4parser/ChunkFragmentM4sBuilderTest.log.txt) is
+from [ChunkFragmentM4sBuilderTest.java](src/test/java/com/charneykaye/ChunkFragmentM4sBuilderTest.java) which results in
+the concatenated test output [test-java-mp4parser.mp4](notes/via-java-mp4parser/test-java-mp4parser.mp4) which is in
+fact empty:
+
+![test-java-mp4parser-ConcatenatedOutputIsEmpty.png](notes/via-java-mp4parser/test-java-mp4parser-ConcatenatedOutputIsEmpty.png)
 
 ```java
 Files.deleteIfExists(Path.of(m4sFilePath));
@@ -38,7 +64,13 @@ fc.close();
 - [test5-128k-163493806.m4s](notes/via-java-mp4parser/test5-128k-163493806.m4s)
 - [test5-128k-IS.mp4](notes/via-java-mp4parser/test5-128k-IS.mp4)
 
-## via MP4Box (ok)
+### via MP4Box (ok)
+
+The latter [log](notes/via-mp4box/MP4BoxTest.log.txt) is
+from [MP4BoxTest.java](src/test/java/com/charneykaye/MP4BoxTest.java) which results in the concatenated test output
+[test-mp4box.mp4](notes/via-mp4box/test-mp4box.mp4) which is OK:
+
+![test-mp4box-ConcatenatedOutputIsOK.png](notes/via-mp4box/test-mp4box-ConcatenatedOutputIsOK.png)
 
 ```shell
 MP4Box \
@@ -64,22 +96,10 @@ MP4Box \
 - [test5-128k-163494322.m4s](notes/via-mp4box/test5-128k-163494322.m4s)
 - [test5-128k-IS.mp4](notes/via-mp4box/test5-128k-IS.mp4)
 
+
+
+
 ## Demo of Encoding a Fragmented MP4
-
-This use case is a service that manually encodes a series of uncompressed .wav media segments into **.m4s** fragments
-for broadcast via [MPEG-DASH](https://en.wikipedia.org/wiki/Dynamic_Adaptive_Streaming_over_HTTP),
-using [ffmpeg](https://www.ffmpeg.org/) to compress the .wav to .aac
-and [sannies/mp4parser](https://github.com/sannies/mp4parser) to assemble the aac audio into an **.m4s** media fragment.
-
-I created this public GitHub project to reproduce the issue in its entirety.
-
-For example, here's the
-custom [ChunkFragmentM4sBuilder.java](src/main/java/com/charneykaye/ChunkFragmentM4sBuilder.java) class.
-
-The objective is to build an **.m4s** fragment comprising the box types `SegmentTypeBox`, `SegmentIndexBox`,
-and `MovieFragmentBox`. As For reference, I have used *mp4parser* to inspect an **.m4s** fragment that was generated
-via `ffmpeg -f hls`. This specification is
-available [here as a .yaml file](src/test/resources/test5-128k-151304042-ffmpeg.yaml)
 
 My implementation creates an MP4 without error. But, when the unit test attempts to read the file that the
 ChunkMp4Builder just wrote to a temp folder:
