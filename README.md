@@ -22,6 +22,15 @@ available [here as a .yaml file](src/test/resources/test5-128k-151304042-ffmpeg.
 
 
 
+### Solved by rebuilding ChunkFragmentM4sBuilder from FragmentedMp4Builder
+
+This isn't properly an answer to the question, ***but*** I was able to resolve the issue by rebuilding my ChunkFragmentM4sBuilder class from Sebastian Annies FragmentedMp4Builder instead of his DefaultMp4Builder class (from the original mp4parser builders)
+
+https://github.com/charneykaye/encode-fmp4-demo/commit/b90f05d6eb59dd1ad6394df40479f36347846dcb
+
+
+
+
 ## Java mp4parser output is empty
 
 https://stackoverflow.com/questions/69684510/java-mp4parser-output-is-empty
@@ -32,7 +41,7 @@ files which can then be concatenated to form a playable MPEG4 stream.
 Note: it's a requirement for this use case that each media segment is encoded from an individually generated source
 segment, versus using a tool such as MP4Box to stream from a continuous audio source.
 
-**Attempts to manually build media segments via mp4parser are still failing overall,** because the fragments written by
+Attempts to manually build media segments via mp4parser are still failing overall, because the fragments written by
 my [ChunkFragmentM4sBuilder.java](src/main/java/com/charneykaye/ChunkFragmentM4sBuilder.java) used below are malformed.
 But I'm having a difficult time understanding *how* exactly they are malformed.
 
