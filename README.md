@@ -46,7 +46,7 @@ Files.deleteIfExists(Path.of(m4sFilePath));
         AACTrackImpl aacTrack=new AACTrackImpl(new FileDataSourceImpl(aacFilePath));
         Movie movie=new Movie();
         movie.addTrack(aacTrack);
-        Container mp4file=new ChunkFragmentM4sBuilder(seqNum).build(movie);
+        Container mp4file=new ChunkFragmentM4sBuilder(sequenceNumber).build(movie);
         FileChannel fc=new FileOutputStream(m4sFilePath).getChannel();
         mp4file.writeContainer(fc);
         fc.close();
