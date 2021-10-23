@@ -7,7 +7,7 @@ https://stackoverflow.com/questions/69625970/java-mp4parser-to-create-m4s-fragme
 This use case is a service that manually encodes a series of uncompressed .wav media segments into **.m4s** fragments
 for broadcast via [MPEG-DASH](https://en.wikipedia.org/wiki/Dynamic_Adaptive_Streaming_over_HTTP),
 using [ffmpeg](https://www.ffmpeg.org/) to compress the .wav to .aac
-and [sannies/mp4parser](https://github.com/sannies/mp4parser) to assemble the aac audio into an **.m4s** media fragment.
+and [sannies/mp4parser](https://github.com/sannies/mp4parser) to assemble the aac audio into a **.m4s** media fragment.
 
 I created this public GitHub project to reproduce the issue in its entirety.
 
@@ -15,7 +15,7 @@ For example, here's the
 custom [ChunkFragmentM4sBuilder.java](src/main/java/com/charneykaye/ChunkFragmentM4sBuilder.java) class.
 
 The objective is to build an **.m4s** fragment comprising the box types `SegmentTypeBox`, `SegmentIndexBox`,
-and `MovieFragmentBox`. As For reference, I have used *mp4parser* to inspect an **.m4s** fragment that was generated
+and `MovieFragmentBox`. For reference, I have used *mp4parser* to inspect a **.m4s** fragment that was generated
 via `ffmpeg -f hls`. This specification is
 available [here as a .yaml file](src/test/resources/test5-128k-151304042-ffmpeg.yaml)
 
@@ -24,11 +24,13 @@ available [here as a .yaml file](src/test/resources/test5-128k-151304042-ffmpeg.
 
 ## Java mp4parser output is empty
 
+https://stackoverflow.com/questions/69684510/java-mp4parser-output-is-empty
+
 The first example using MP4 box works, insofar as I am able to generate an initializing MP4 + series of fragment M4s
 files which can then be concatenated to form a playable MPEG4 stream.
 
-Note: it's a requirement for this use case that each media segment be encoded from individually generated source
-segments, versus using a tool such as MP4Box to stream from a continuous audio source.
+Note: it's a requirement for this use case that each media segment is encoded from an individually generated source
+segment, versus using a tool such as MP4Box to stream from a continuous audio source.
 
 **Attempts to manually build media segments via mp4parser are still failing overall,** because the fragments written by
 my [ChunkFragmentM4sBuilder.java](src/main/java/com/charneykaye/ChunkFragmentM4sBuilder.java) used below are malformed.
@@ -101,7 +103,7 @@ MP4Box \
 
 ## Fragmented MP4 has moof, not moov
 
-See [this Stack Overflow Question](https://stackoverflow.com/a/69668111/1335245) I posted.
+https://stackoverflow.com/questions/69625970/java-mp4parser-to-create-a-single-m4s-fragment-invalid-moov-box/
 
 My implementation created an MP4 without error. But, when the unit test attempts to read the file that the
 ChunkMp4Builder just wrote to a temp folder:
