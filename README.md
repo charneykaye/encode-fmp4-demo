@@ -14,11 +14,6 @@ I created this public GitHub project to reproduce the issue in its entirety.
 For example, here's the
 custom [ChunkFragmentM4sBuilder.java](src/main/java/com/charneykaye/ChunkFragmentM4sBuilder.java) class.
 
-The objective is to build an **.m4s** fragment comprising the box types `SegmentTypeBox`, `SegmentIndexBox`,
-and `MovieFragmentBox`. For reference, I have used *mp4parser* to inspect a **.m4s** fragment that was generated
-via `ffmpeg -f hls`. This specification is
-available [here as a .yaml file](src/test/resources/test5-128k-151304042-ffmpeg.yaml)
-
 ## Java mp4parser fragment sequence discontinuity
 
 https://stackoverflow.com/questions/69686039/java-mp4parser-fragment-sequence-discontinuity
@@ -88,6 +83,11 @@ side, [ChunkFragmentM4sBuilderTest.log.txt](notes/via-java-mp4parser/ChunkFragme
 and [MP4BoxTest.log.txt](notes/via-mp4box/MP4BoxTest.log.txt).
 
 ### via Java mp4parser (malformed)
+
+The objective is to build an **.m4s** fragment comprising the box types `SegmentTypeBox`, `SegmentIndexBox`,
+and `MovieFragmentBox`. For reference, I have used *mp4parser* to inspect a **.m4s** fragment that was generated
+via `ffmpeg -f hls`. This specification is
+available [here as a .yaml file](src/test/resources/test5-128k-151304042-ffmpeg.yaml)
 
 The former [log](notes/via-java-mp4parser/ChunkFragmentM4sBuilderTest.log.txt) is
 from [ChunkFragmentM4sBuilderTest.java](src/test/java/com/charneykaye/ChunkFragmentM4sBuilderTest.java) which results in
