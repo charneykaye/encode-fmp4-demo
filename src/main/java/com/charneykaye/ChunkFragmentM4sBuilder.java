@@ -301,9 +301,9 @@ public record ChunkFragmentM4sBuilder(int sequenceNumber) implements Mp4Builder 
      Gets all samples starting with <code>startSample</code> (one based -&gt; one is the first) and
      ending with <code>endSample</code> (exclusive).
 
+     @param endSample high endpoint (exclusive) of the sample sequence
+     @param track     source of the samples
      @return a <code>List&lt;Sample&gt;</code> of raw samples
-     @param endSample   high endpoint (exclusive) of the sample sequence
-     @param track       source of the samples
      */
     private List<Sample> getSamples(long endSample, Track track) {
         // since startSample and endSample are one-based subtract 1 before addressing list elements
@@ -313,9 +313,9 @@ public record ChunkFragmentM4sBuilder(int sequenceNumber) implements Mp4Builder 
     /**
      Gets the sizes of a sequence of samples.
 
+     @param endSample high endpoint (exclusive) of the sample sequence
+     @param track     source of the samples
      @return the sample sizes in the given interval
-     @param endSample   high endpoint (exclusive) of the sample sequence
-     @param track       source of the samples
      */
     private long[] getSampleSizes(long endSample, Track track) {
         List<Sample> samples = getSamples(endSample, track);

@@ -19,8 +19,45 @@ and `MovieFragmentBox`. For reference, I have used *mp4parser* to inspect a **.m
 via `ffmpeg -f hls`. This specification is
 available [here as a .yaml file](src/test/resources/test5-128k-151304042-ffmpeg.yaml)
 
+## Fragment sequence discontinuity
 
+The [log](notes/via-java-mp4parser-v2/ChunkFragmentM4sBuilderTest.log.txt) is
+from [ChunkFragmentM4sBuilderTest.java](src/test/java/com/charneykaye/ChunkFragmentM4sBuilderTest.java) which results in
+the concatenated test output [test-java-mp4parser.mp4](notes/via-java-mp4parser-v2/test-java-mp4parser.mp4) appears to
+be ok:
 
+![test-java-mp4parser-ConcatenatedOutputIsEmpty.png](notes/via-java-mp4parser-v2/test-java-mp4parser-ConcatenatedOutputIsOK.png)
+
+However, when the shipped playlist and segments are played back using VLC, I see these failures in the logs:
+
+```
+mp4: Fragment sequence discontinuity detected 163497124 != 0
+```
+
+This error happens when VLC plays the following DASH playlist:
+
+- [test5.mpd](notes/via-java-mp4parser-v2/test5.mpd)
+- [test5-128k-163497124.m4s](notes/via-java-mp4parser-v2/test5-128k-163497124.m4s)
+- [test5-128k-163497125.m4s](notes/via-java-mp4parser-v2/test5-128k-163497125.m4s)
+- [test5-128k-163497126.m4s](notes/via-java-mp4parser-v2/test5-128k-163497126.m4s)
+- [test5-128k-IS.mp4](notes/via-java-mp4parser-v2/test5-128k-IS.mp4)
+
+And here is the latest implementation of my custom fragment builder class, and additional notes:
+
+```java
+Files.deleteIfExists(Path.of(m4sFilePath));
+        AACTrackImpl aacTrack=new AACTrackImpl(new FileDataSourceImpl(aacFilePath));
+        Movie movie=new Movie();
+        movie.addTrack(aacTrack);
+        Container mp4file=new ChunkFragmentM4sBuilder(seqNum).build(movie);
+        FileChannel fc=new FileOutputStream(m4sFilePath).getChannel();
+        mp4file.writeContainer(fc);
+        fc.close();
+```
+
+- [ChunkFragmentM4sBuilderTest.log.txt](notes/via-java-mp4parser-v2/ChunkFragmentM4sBuilderTest.log.txt)
+- [test5-128k-IS.mp4](notes/via-java-mp4parser-v2/test5-128k-IS.mp4)
+- [test-java-mp4parser.mp4](notes/via-java-mp4parser-v2/test-java-mp4parser.mp4)
 
 ### Solved by rebuilding ChunkFragmentM4sBuilder from FragmentedMp4Builder
 
@@ -42,8 +79,8 @@ Note: it's a requirement for this use case that each media segment is encoded fr
 segment, versus using a tool such as MP4Box to stream from a continuous audio source.
 
 Attempts to manually build media segments via mp4parser are still failing overall, because the fragments written by
-my [ChunkFragmentM4sBuilder.java](src/main/java/com/charneykaye/ChunkFragmentM4sBuilder.java) used below are malformed.
-But I'm having a difficult time understanding *how* exactly they are malformed.
+my [ChunkFragmentM4sBuilderV1.java](src/main/java/com/charneykaye/ChunkFragmentM4sBuilderV1.java) used below are
+malformed. But I'm having a difficult time understanding *how* exactly they are malformed.
 
 It's been helpful for me to compare the two test logs side by
 side, [ChunkFragmentM4sBuilderTest.log.txt](notes/via-java-mp4parser/ChunkFragmentM4sBuilderTest.log.txt)
@@ -53,20 +90,20 @@ and [MP4BoxTest.log.txt](notes/via-mp4box/MP4BoxTest.log.txt).
 
 The former [log](notes/via-java-mp4parser/ChunkFragmentM4sBuilderTest.log.txt) is
 from [ChunkFragmentM4sBuilderTest.java](src/test/java/com/charneykaye/ChunkFragmentM4sBuilderTest.java) which results in
-the concatenated test output [test-java-mp4parser-malformed.mp4](notes/via-java-mp4parser/test-java-mp4parser-malformed.mp4) which is in
+the concatenated test output [test-java-mp4parser.mp4](notes/via-java-mp4parser/test-java-mp4parser.mp4) which is in
 fact empty:
 
 ![test-java-mp4parser-ConcatenatedOutputIsEmpty.png](notes/via-java-mp4parser/test-java-mp4parser-ConcatenatedOutputIsEmpty.png)
 
 ```java
 Files.deleteIfExists(Path.of(m4sFilePath));
-AACTrackImpl aacTrack=new AACTrackImpl(new FileDataSourceImpl(aacFilePath));
-Movie movie=new Movie();
-movie.addTrack(aacTrack);
-Container mp4file=new ChunkFragmentM4sBuilder(hz,seconds,seqNum,bufferSize).build(movie);
-FileChannel fc=new FileOutputStream(m4sFilePath).getChannel();
-mp4file.writeContainer(fc);
-fc.close();
+        AACTrackImpl aacTrack=new AACTrackImpl(new FileDataSourceImpl(aacFilePath));
+        Movie movie=new Movie();
+        movie.addTrack(aacTrack);
+        Container mp4file=new ChunkFragmentM4sBuilderV1(hz,seconds,seqNum,bufferSize).build(movie);
+        FileChannel fc=new FileOutputStream(m4sFilePath).getChannel();
+        mp4file.writeContainer(fc);
+        fc.close();
 ```
 
 - [test5.mpd](notes/via-java-mp4parser/test5.mpd)
@@ -107,9 +144,6 @@ MP4Box \
 - [test5-128k-163494322.m4s](notes/via-mp4box/test5-128k-163494322.m4s)
 - [test5-128k-IS.mp4](notes/via-mp4box/test5-128k-IS.mp4)
 
-
-
-
 ## Fragmented MP4 has moof, not moov
 
 https://stackoverflow.com/questions/69625970/java-mp4parser-to-create-a-single-m4s-fragment-invalid-moov-box/
@@ -143,9 +177,12 @@ See diagram of Fragmented MP4 (fmp4): https://bitmovin.com/wp-content/uploads/20
 
 Your `m4s` segments are invalid due to an incorrect `mdat` atom size.
 
-For example in `test5-128k-151304042.m4s` the `mdat` is marked as having a length of 16 bytes but there is data at the end and file size is 164884.
+For example in `test5-128k-151304042.m4s` the `mdat` is marked as having a length of 16 bytes but there is data at the
+end and file size is 164884.
 
-The parser then attempts to read an invalid offset. `avc5` is not an atom but actually part of the string "Lavc58.54.100". The length read as 3724673100 is also invalid and greater than the max for a 32-bit integer, hence the invalid cast to int.
+The parser then attempts to read an invalid offset. `avc5` is not an atom but actually part of the string "
+Lavc58.54.100". The length read as 3724673100 is also invalid and greater than the max for a 32-bit integer, hence the
+invalid cast to int.
 
 [![hex dump][1]][1]
 
@@ -164,12 +201,13 @@ In your implementation you have:
         // ...
     }
 
-This is not a `moov` atom, it's a `moof`. There is no `stsz` in there and the sum of your sample sizes is 0 so the total calculated size of the `mdat` is 16 + 0.
+This is not a `moov` atom, it's a `moof`. There is no `stsz` in there and the sum of your sample sizes is 0 so the total
+calculated size of the `mdat` is 16 + 0.
 
 The `moov` is supposed to be in the initialization segment.
 
 
-  [1]: https://i.stack.imgur.com/4z7gE.jpg
+[1]: https://i.stack.imgur.com/4z7gE.jpg
 
 
 [2]: https://i.stack.imgur.com/aAmyt.png
