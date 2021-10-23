@@ -25,7 +25,7 @@ be ok:
 
 ![test-java-mp4parser-ConcatenatedOutputIsEmpty.png](notes/via-java-mp4parser-v2/test-java-mp4parser-ConcatenatedOutputIsOK.png)
 
-However, when the shipped playlist and segments are played back using VLC, I see these failures in the logs:
+However, when I play the shipped playlist and segments using VLC, I see these failures in the logs:
 
 ```
 mp4: Fragment sequence discontinuity detected 163497124 != 0
@@ -39,7 +39,7 @@ This error happens when VLC plays the following DASH playlist:
 - [test5-128k-163497126.m4s](notes/via-java-mp4parser-v2/test5-128k-163497126.m4s)
 - [test5-128k-IS.mp4](notes/via-java-mp4parser-v2/test5-128k-IS.mp4)
 
-And here is the latest implementation of my custom fragment builder class, and additional notes:
+And here is the latest implementation of my custom fragment builder class and additional notes:
 
 ```java
 Files.deleteIfExists(Path.of(m4sFilePath));
