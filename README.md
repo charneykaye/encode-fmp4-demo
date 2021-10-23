@@ -5,7 +5,7 @@
 ### Lab Notes and a Series of Stack Overflow Questions
 
 This use case is a service that manually encodes a series of uncompressed .wav media segments into **.m4s** fragments
-for broadcast via [MPEG-DASH](https://en.wikipedia.org/wiki/Dynamic_Adaptive_Streaming_over_HTTP),
+for broadcast via [MPEG-DASH](https://en.wikipedia.org/wiki/Dynamic_Adaptive_Streaming_over_HTTP) and [HLS](https://en.wikipedia.org/wiki/HTTP_Live_Streaming),
 using [ffmpeg](https://www.ffmpeg.org/) to compress the .wav to .aac
 and [sannies/mp4parser](https://github.com/sannies/mp4parser) to assemble the aac audio into a **.m4s** media fragment.
 
