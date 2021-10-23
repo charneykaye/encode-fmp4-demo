@@ -1,6 +1,8 @@
 [![Production CI](https://github.com/charneykaye/encode-fmp4-demo/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/charneykaye/encode-fmp4-demo/actions/workflows/main.yml)
 
-## Lab Notes: Individually Encoding Fragmented MP4 Segments
+# Individually Encoding Fragmented MP4 Segments
+
+### Lab Notes and a Series of Stack Overflow Questions
 
 This use case is a service that manually encodes a series of uncompressed .wav media segments into **.m4s** fragments
 for broadcast via [MPEG-DASH](https://en.wikipedia.org/wiki/Dynamic_Adaptive_Streaming_over_HTTP),
@@ -17,7 +19,7 @@ and `MovieFragmentBox`. For reference, I have used *mp4parser* to inspect a **.m
 via `ffmpeg -f hls`. This specification is
 available [here as a .yaml file](src/test/resources/test5-128k-151304042-ffmpeg.yaml)
 
-## Fragment sequence discontinuity
+## Java mp4parser fragment sequence discontinuity
 
 https://stackoverflow.com/questions/69686039/java-mp4parser-fragment-sequence-discontinuity
 
@@ -61,12 +63,11 @@ Files.deleteIfExists(Path.of(m4sFilePath));
 
 ### Solved by rebuilding ChunkFragmentM4sBuilder from FragmentedMp4Builder
 
-This isn't properly an answer to the question, ***but*** I was able to resolve the issue by rebuilding my ChunkFragmentM4sBuilder class from Sebastian Annies FragmentedMp4Builder instead of his DefaultMp4Builder class (from the original mp4parser builders)
+This isn't properly an answer to the question, ***but*** I was able to resolve the issue by rebuilding my
+ChunkFragmentM4sBuilder class from Sebastian Annies FragmentedMp4Builder instead of his DefaultMp4Builder class (from
+the original mp4parser builders)
 
 https://github.com/charneykaye/encode-fmp4-demo/commit/b90f05d6eb59dd1ad6394df40479f36347846dcb
-
-
-
 
 ## Java mp4parser output is empty
 
