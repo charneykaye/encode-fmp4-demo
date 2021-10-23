@@ -33,7 +33,6 @@ public class ChunkFragmentM4sBuilder implements Mp4Builder {
     private final int sampleRate;
     private final long sequenceNumber;
     private final int lengthSeconds;
-    private final long dspBufferSize;
     Map<Track, StaticChunkOffsetBox> chunkOffsetBoxes = new HashMap<>();
     Set<SampleAuxiliaryInformationOffsetsBox> sampleAuxiliaryInformationOffsetsBoxes = new HashSet<>();
     HashMap<Track, List<Sample>> track2Sample = new HashMap<>();
@@ -43,13 +42,11 @@ public class ChunkFragmentM4sBuilder implements Mp4Builder {
     public ChunkFragmentM4sBuilder(
             int sampleRate,
             int lengthSeconds,
-            long sequenceNumber,
-            long dspBufferSize
+            long sequenceNumber
     ) {
         this.sampleRate = sampleRate;
         this.lengthSeconds = lengthSeconds;
         this.sequenceNumber = sequenceNumber;
-        this.dspBufferSize = dspBufferSize;
         subsegmentDuration = (long) sampleRate * lengthSeconds;
     }
 
