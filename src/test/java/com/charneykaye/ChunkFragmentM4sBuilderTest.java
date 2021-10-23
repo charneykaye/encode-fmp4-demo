@@ -25,8 +25,8 @@ import static org.junit.Assert.assertEquals;
 
 
 @RunWith(MockitoJUnitRunner.class)
-public class Mp4parserTest extends TestBase {
-    private static final Logger LOG = LoggerFactory.getLogger(Mp4parserTest.class);
+public class ChunkFragmentM4sBuilderTest extends TestBase {
+    private static final Logger LOG = LoggerFactory.getLogger(ChunkFragmentM4sBuilderTest.class);
     private static final String K = "k";
     private static final String SHIP_KEY = "test5";
     private final String aacFilePath;
@@ -42,7 +42,7 @@ public class Mp4parserTest extends TestBase {
 
     private ChunkFragmentM4sBuilder subject;
 
-    public Mp4parserTest(
+    public ChunkFragmentM4sBuilderTest(
     ) {
         bitrateName = String.format("%d%s", (int) Math.floor((double) bitrate / 1000), K);
         String tempFilePathPrefix = "/tmp/";
@@ -53,7 +53,7 @@ public class Mp4parserTest extends TestBase {
         aacFilePath = String.format("%s%s.aac", tempFilePathPrefix, key);
         wavFilePath = getResourceFile("test5-151304042.wav").getAbsolutePath();
         initSegPath = getResourceFile("test5-128k-IS.mp4").getAbsolutePath();
-        testMp4Path = String.format("%s%s.mp4", tempFilePathPrefix, "test-mp4box");
+        testMp4Path = String.format("%s%s.mp4", tempFilePathPrefix, "test-java-mp4parser");
     }
 
     @Before

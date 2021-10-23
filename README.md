@@ -93,7 +93,7 @@ java.lang.RuntimeException: A cast to int has gone wrong. Please contact the mp4
 	at org.mp4parser.IsoFile.<init>(IsoFile.java:57)
 	at org.mp4parser.IsoFile.<init>(IsoFile.java:52)
 	at com.charneykaye.TestBase.getMp4Boxes(TestBase.java:116)
-	at com.charneykaye.Mp4parserTest.run(Mp4parserTest.java:78)
+	at com.charneykaye.ChunkFragmentM4sBuilderTest.run(Mp4parserTest.java:78)
 ```
 
 The expected box types `SegmentTypeBox`, `SegmentIndexBox`, and `MovieFragmentBox` do appear in the output:
