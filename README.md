@@ -53,7 +53,7 @@ and [MP4BoxTest.log.txt](notes/via-mp4box/MP4BoxTest.log.txt).
 
 The former [log](notes/via-java-mp4parser/ChunkFragmentM4sBuilderTest.log.txt) is
 from [ChunkFragmentM4sBuilderTest.java](src/test/java/com/charneykaye/ChunkFragmentM4sBuilderTest.java) which results in
-the concatenated test output [test-java-mp4parser.mp4](notes/via-java-mp4parser/test-java-mp4parser.mp4) which is in
+the concatenated test output [test-java-mp4parser-malformed.mp4](notes/via-java-mp4parser/test-java-mp4parser-malformed.mp4) which is in
 fact empty:
 
 ![test-java-mp4parser-ConcatenatedOutputIsEmpty.png](notes/via-java-mp4parser/test-java-mp4parser-ConcatenatedOutputIsEmpty.png)
