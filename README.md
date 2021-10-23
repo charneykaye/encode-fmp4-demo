@@ -43,13 +43,13 @@ And here is the latest implementation of my custom fragment builder class and ad
 
 ```java
 Files.deleteIfExists(Path.of(m4sFilePath));
-        AACTrackImpl aacTrack=new AACTrackImpl(new FileDataSourceImpl(aacFilePath));
-        Movie movie=new Movie();
-        movie.addTrack(aacTrack);
-        Container mp4file=new ChunkFragmentM4sBuilder(sequenceNumber).build(movie);
-        FileChannel fc=new FileOutputStream(m4sFilePath).getChannel();
-        mp4file.writeContainer(fc);
-        fc.close();
+AACTrackImpl aacTrack=new AACTrackImpl(new FileDataSourceImpl(aacFilePath));
+Movie movie=new Movie();
+movie.addTrack(aacTrack);
+Container mp4file=new ChunkFragmentM4sBuilder(sequenceNumber).build(movie);
+FileChannel fc=new FileOutputStream(m4sFilePath).getChannel();
+mp4file.writeContainer(fc);
+fc.close();
 ```
 
 - [ChunkFragmentM4sBuilderTest.log.txt](notes/via-java-mp4parser-v2/ChunkFragmentM4sBuilderTest.log.txt)
@@ -98,13 +98,13 @@ fact empty:
 
 ```java
 Files.deleteIfExists(Path.of(m4sFilePath));
-        AACTrackImpl aacTrack=new AACTrackImpl(new FileDataSourceImpl(aacFilePath));
-        Movie movie=new Movie();
-        movie.addTrack(aacTrack);
-        Container mp4file=new ChunkFragmentM4sBuilderV1(hz,seconds,seqNum,bufferSize).build(movie);
-        FileChannel fc=new FileOutputStream(m4sFilePath).getChannel();
-        mp4file.writeContainer(fc);
-        fc.close();
+AACTrackImpl aacTrack=new AACTrackImpl(new FileDataSourceImpl(aacFilePath));
+Movie movie=new Movie();
+movie.addTrack(aacTrack);
+Container mp4file=new ChunkFragmentM4sBuilderV1(hz,seconds,seqNum,bufferSize).build(movie);
+FileChannel fc=new FileOutputStream(m4sFilePath).getChannel();
+mp4file.writeContainer(fc);
+fc.close();
 ```
 
 - [test5.mpd](notes/via-java-mp4parser/test5.mpd)
