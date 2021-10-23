@@ -25,8 +25,8 @@ import static org.mp4parser.tools.CastUtils.l2i;
 /**
  Creates a plain MP4 file from a video. Plain as plain can be.
  */
-public class CustomFragmentMp4Builder implements Mp4Builder {
-    private static final Logger LOG = LoggerFactory.getLogger(CustomFragmentMp4Builder.class);
+public class ChunkFragmentM4sBuilder implements Mp4Builder {
+    private static final Logger LOG = LoggerFactory.getLogger(ChunkFragmentM4sBuilder.class);
     private static final String BRAND_MSDH = "msdh";
     private static final String BRAND_MSIX = "msix";
     private final long subsegmentDuration;
@@ -40,7 +40,7 @@ public class CustomFragmentMp4Builder implements Mp4Builder {
     HashMap<Track, long[]> track2SampleSizes = new HashMap<>();
     private Fragmenter fragmenter;
 
-    public CustomFragmentMp4Builder(
+    public ChunkFragmentM4sBuilder(
             int sampleRate,
             int lengthSeconds,
             long sequenceNumber,
@@ -81,26 +81,26 @@ public class CustomFragmentMp4Builder implements Mp4Builder {
             track2SampleSizes.put(track, sizes);
         }
 
-        BasicContainer isoFile = new BasicContainer();
-
-        isoFile.addBox(createSegmentTypeBox());
-
-        isoFile.addBox(createSegmentIndexBox());
-
         Map<Track, int[]> chunks = new HashMap<>();
         for (Track track : movie.getTracks()) {
             chunks.put(track, getChunkSizes(track));
         }
         ParsableBox moof = createMovieFragmentBox(movie);
-        isoFile.addBox(moof);
         List<TrackRunBox.Entry> entries = ((TrackRunBox) Path.getPath(moof, "traf/trun")).getEntries();
 
-        long contentSize = 0;
+        int contentSize = 0;
         for (TrackRunBox.Entry traf : entries)
             contentSize += traf.getSampleSize();
+
         LOG.debug("About to create mdat");
         InterleaveChunkMdat mdat = new InterleaveChunkMdat(movie, chunks, contentSize);
 
+        BasicContainer isoFile = new BasicContainer();
+
+        isoFile.addBox(createSegmentTypeBox());
+
+        isoFile.addBox(createSegmentIndexBox(contentSize));
+        isoFile.addBox(moof);
         long dataOffset = 16;
         for (Box lightBox : isoFile.getBoxes()) {
             dataOffset += lightBox.getSize();
@@ -136,21 +136,21 @@ public class CustomFragmentMp4Builder implements Mp4Builder {
         return isoFile;
     }
 
-    private SegmentIndexBox createSegmentIndexBox() {
+    private SegmentIndexBox createSegmentIndexBox(int referencedSize) {
         SegmentIndexBox sidx = new SegmentIndexBox();
         sidx.setEntries(List.of(new SegmentIndexBox.Entry(
                 0,
-                64690, // TODO what is the meaning of "referenced size" and how do we compute it?
+                referencedSize, // FUTURE what is the meaning of "referenced size" and how do we compute it?
                 subsegmentDuration,
                 true,
                 0,
                 0
         )));
         sidx.setTimeScale(getTimescale());
-        sidx.setReferenceId(1); // TODO set reference id from for real chunk values
-        sidx.setEarliestPresentationTime(0); // TODO set earliest presentation time from for real chunk values
-        sidx.setFirstOffset(0); // TODO set first offset from for real chunk values
-        sidx.setReserved(0); // TODO set reserved from for real chunk values
+        sidx.setReferenceId(1);
+        sidx.setEarliestPresentationTime(0);
+        sidx.setFirstOffset(0);
+        sidx.setReserved(0);
         return sidx;
     }
 
@@ -214,27 +214,10 @@ public class CustomFragmentMp4Builder implements Mp4Builder {
     private TrackFragmentHeaderBox computeTrackFragmentHeaderBox(Track track) {
         TrackFragmentHeaderBox tfhb = new TrackFragmentHeaderBox();
         tfhb.setTrackId(track.getTrackMetaData().getTrackId());
-        tfhb.setBaseDataOffset(-1);
         tfhb.setSampleDescriptionIndex(0);
-        tfhb.setDefaultSampleDuration(dspBufferSize);
-        tfhb.setDefaultSampleSize(111);
         tfhb.setDurationIsEmpty(false);
         tfhb.setDefaultBaseIsMoof(true);
-        tfhb.setDefaultSampleFlags(computeTrackFragmentHeaderBoxSampleFlags());
         return tfhb;
-    }
-
-    private SampleFlags computeTrackFragmentHeaderBoxSampleFlags() {
-        SampleFlags sf = new SampleFlags();
-        sf.setReserved(0);
-        sf.setIsLeading((byte) 0);
-        sf.setSampleDependsOn(2);
-        sf.setSampleIsDependedOn(0);
-        sf.setSampleHasRedundancy(0);
-        sf.setSamplePaddingValue(0);
-        sf.setSampleIsDifferenceSample(false);
-        sf.setSampleDegradationPriority(0);
-        return sf;
     }
 
     /**
@@ -338,7 +321,7 @@ public class CustomFragmentMp4Builder implements Mp4Builder {
 
             chunkSizes[i] = l2i(end - start);
         }
-        assert CustomFragmentMp4Builder.this.track2Sample.get(track).size() == sum(chunkSizes) : "The number of samples and the sum of all chunk lengths must be equal";
+        assert ChunkFragmentM4sBuilder.this.track2Sample.get(track).size() == sum(chunkSizes) : "The number of samples and the sum of all chunk lengths must be equal";
         return chunkSizes;
     }
 
