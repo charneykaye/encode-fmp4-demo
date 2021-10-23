@@ -22,7 +22,7 @@ available [here as a .yaml file](src/test/resources/test5-128k-151304042-ffmpeg.
 
 
 
-## Comparing methods of MP4 creation
+## Java mp4parser output is empty
 
 The first example using MP4 box works, insofar as I am able to generate an initializing MP4 + series of fragment M4s
 files which can then be concatenated to form a playable MPEG4 stream.
@@ -99,9 +99,11 @@ MP4Box \
 
 
 
-## Demo of Encoding a Fragmented MP4
+## Fragmented MP4 has moof, not moov
 
-My implementation creates an MP4 without error. But, when the unit test attempts to read the file that the
+See [this Stack Overflow Question](https://stackoverflow.com/a/69668111/1335245) I posted.
+
+My implementation created an MP4 without error. But, when the unit test attempts to read the file that the
 ChunkMp4Builder just wrote to a temp folder:
 
 ```
@@ -124,13 +126,7 @@ However, at the end of the file appears a box of an unknown type:
 
 [![There seems to be a box of an unknown type, appearing at the end of the file.][3]][3]
 
-
-
-
-## Fragmented MP4 has moof, not moov
-
-Solved by [@aergistal](https://stackoverflow.com/users/4663670/aergistal) on Stack Overflow
-https://stackoverflow.com/a/69668111/1335245
+### Solved by [@aergistal](https://stackoverflow.com/users/4663670/aergistal)
 
 See diagram of Fragmented MP4 (fmp4): https://bitmovin.com/wp-content/uploads/2019/07/image7.png
 
