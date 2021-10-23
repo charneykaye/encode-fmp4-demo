@@ -13,15 +13,20 @@ segments, versus using a tool such as MP4Box to stream from a continuous audio s
 ## via Java mp4parser (malformed)
 
 **Attempts to manually build media segments via mp4parser are still failing overall,** because the fragments written by
-my [CustomFragmentMp4Builder.java](src/main/java/com/charneykaye/CustomFragmentMp4Builder.java) used below are
+my [ChunkFragmentM4sBuilder.java](src/main/java/com/charneykaye/ChunkFragmentM4sBuilder.java) used below are
 malformed. But I'm having a difficult time understanding *how* exactly they are malformed.
+
+It's been helpful for me to compare these two test outputs:
+
+  * [Output](notes/via-mp4box/MP4BoxTest.log.txt) from [Mp4parserTest.java](src/test/java/com/charneykaye/Mp4parserTest.java) 
+  * [Output](notes/via-java-mp4parser/Mp4parserTest.log.txt) from [MP4BoxTest.java](src/test/java/com/charneykaye/MP4BoxTest.java) 
 
 ```java
 Files.deleteIfExists(Path.of(m4sFilePath));
 AACTrackImpl aacTrack=new AACTrackImpl(new FileDataSourceImpl(aacFilePath));
 Movie movie=new Movie();
 movie.addTrack(aacTrack);
-Container mp4file=new CustomFragmentMp4Builder(hz,seconds,seqNum,bufferSize).build(movie);
+Container mp4file=new ChunkFragmentM4sBuilder(hz,seconds,seqNum,bufferSize).build(movie);
 FileChannel fc=new FileOutputStream(m4sFilePath).getChannel();
 mp4file.writeContainer(fc);
 fc.close();
@@ -69,7 +74,7 @@ and [sannies/mp4parser](https://github.com/sannies/mp4parser) to assemble the aa
 I created this public GitHub project to reproduce the issue in its entirety.
 
 For example, here's the
-custom [CustomFragmentMp4Builder.java](src/main/java/com/charneykaye/CustomFragmentMp4Builder.java) class.
+custom [ChunkFragmentM4sBuilder.java](src/main/java/com/charneykaye/ChunkFragmentM4sBuilder.java) class.
 
 The objective is to build an **.m4s** fragment comprising the box types `SegmentTypeBox`, `SegmentIndexBox`,
 and `MovieFragmentBox`. As For reference, I have used *mp4parser* to inspect an **.m4s** fragment that was generated
@@ -88,7 +93,7 @@ java.lang.RuntimeException: A cast to int has gone wrong. Please contact the mp4
 	at org.mp4parser.IsoFile.<init>(IsoFile.java:57)
 	at org.mp4parser.IsoFile.<init>(IsoFile.java:52)
 	at com.charneykaye.TestBase.getMp4Boxes(TestBase.java:116)
-	at com.charneykaye.CustomFragmentMp4BuilderTest.run(CustomFragmentMp4BuilderTest.java:78)
+	at com.charneykaye.Mp4parserTest.run(Mp4parserTest.java:78)
 ```
 
 The expected box types `SegmentTypeBox`, `SegmentIndexBox`, and `MovieFragmentBox` do appear in the output:

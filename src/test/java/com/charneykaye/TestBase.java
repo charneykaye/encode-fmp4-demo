@@ -1,7 +1,6 @@
 package com.charneykaye;
 
 import com.google.api.client.util.Lists;
-import com.google.common.collect.ImmutableList;
 import org.mp4parser.Box;
 import org.mp4parser.IsoFile;
 
@@ -48,7 +47,7 @@ public abstract class TestBase {
      @return File
      */
     protected File getResourceFile(String filePath) {
-        ClassLoader classLoader = CustomFragmentMp4BuilderTest.class.getClassLoader();
+        ClassLoader classLoader = TestBase.class.getClassLoader();
         URL resource = classLoader.getResource(filePath);
         assert resource != null;
         return new File(resource.getFile());
@@ -70,7 +69,7 @@ public abstract class TestBase {
      */
     protected void encodeAAC(String wavFilePath, String bitrateName, String aacFilePath) throws IOException, InterruptedException {
         Files.deleteIfExists(Path.of(aacFilePath));
-        execute(String.join(" ", ImmutableList.of(
+        execute(List.of(
                 "ffmpeg",
                 "-i", wavFilePath,
                 "-ac", "2",
@@ -78,7 +77,7 @@ public abstract class TestBase {
                 "-b:a", bitrateName,
                 "-minrate", bitrateName,
                 "-maxrate", bitrateName,
-                aacFilePath)));
+                aacFilePath));
     }
 
 
@@ -90,19 +89,29 @@ public abstract class TestBase {
      @throws IOException on failure
      */
     protected List<Box> getMp4Boxes(String path) throws IOException {
-        var dataSource = Files.newByteChannel(Path.of(path));
-        var isoFile = new IsoFile(dataSource);
-        return isoFile.getBoxes();
+        return getIsoFile(path).getBoxes();
+    }
+
+    /**
+     Get the IsoFile representation of an MP4 file
+
+     @param path of file to get
+     @return mp4 boxes
+     @throws IOException on failure
+     */
+    protected IsoFile getIsoFile(String path) throws IOException {
+        return new IsoFile(Files.newByteChannel(Path.of(path)));
     }
 
     /**
      Execute the given command
 
-     @param cmd command to execute
+     @param cmdParts command to execute
      @throws IOException          on failure
      @throws InterruptedException on failure
      */
-    protected void execute(String cmd) throws IOException, InterruptedException {
+    protected void execute(List<String> cmdParts) throws IOException, InterruptedException {
+        var cmd = String.join(" ", cmdParts);
         var proc = Runtime.getRuntime().exec(cmd);
         String line;
         List<String> output = Lists.newArrayList();
@@ -111,5 +120,19 @@ public abstract class TestBase {
         if (0 != proc.waitFor()) {
             throw new IOException(String.format("Failed: %s\n\n%s", cmd, formatMultiline(output.toArray())));
         }
+    }
+
+    /**
+     Assert the target path is a valid MP4 with specific details
+
+     @param path to test
+     @return MP4 boxes
+     @throws IOException on failure
+     */
+    protected IsoFile assertValidMp4(String desc, String path) throws IOException {
+        var file = getIsoFile(path);
+        System.out.printf("------[ %s ]------%n", desc);
+        for (var box : file.getBoxes()) System.out.println(box.toString());
+        return file;
     }
 }

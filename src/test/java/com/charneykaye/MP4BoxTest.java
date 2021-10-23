@@ -1,7 +1,6 @@
 // Copyright (c) Charney Kaye Inc. (https://charneykaye.com) All Rights Reserved.
 package com.charneykaye;
 
-import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,9 +10,13 @@ import org.mp4parser.boxes.iso14496.part12.MovieFragmentHeaderBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import static org.joda.time.DateTimeConstants.MILLIS_PER_SECOND;
 import static org.junit.Assert.assertEquals;
@@ -37,6 +40,8 @@ public class MP4BoxTest extends TestBase {
     private final String wavFilePath;
     private final String tempPlaylistPath;
     private final String segmentName;
+    private final String initSegPath;
+    private final String testMp4Path;
 
     public MP4BoxTest(
     ) {
@@ -50,6 +55,8 @@ public class MP4BoxTest extends TestBase {
         segmentName = String.format("%s-", shipKey);
         aacFilePath = String.format("%s%s.aac", tempFilePathPrefix, key);
         wavFilePath = getResourceFile("test5-151304042.wav").getAbsolutePath();
+        initSegPath = getResourceFile("test5-128k-IS.mp4").getAbsolutePath();
+        testMp4Path = String.format("%s%s.mp4", tempFilePathPrefix, "test-mp4box");
     }
 
     @Before
@@ -57,31 +64,31 @@ public class MP4BoxTest extends TestBase {
     }
 
     @Test
-    public void run() throws IOException {
+    public void run() throws IOException, InterruptedException {
         LOG.debug("will encode AAC from WAV");
-        try {
-            encodeAAC(wavFilePath, bitrateName, aacFilePath);
-            LOG.info("did encode AAC audio at {} to {}", bitrate, aacFilePath);
-        } catch (Exception e) {
-            LOG.error("Failed to encode AAC audio at {} to {}", bitrate, aacFilePath, e);
-            return;
-        }
+        encodeAAC(wavFilePath, bitrateName, aacFilePath);
+        LOG.info("did encode AAC audio at {} to {}", bitrate, aacFilePath);
 
         LOG.debug("will construct M4S from AAC");
-        try {
-            constructM4S();
-            LOG.info("did construct M4S at {} to {}", bitrate, m4sFilePath);
-        } catch (Exception e) {
-            LOG.error("Failed to construct M4S at {} to {}", bitrate, m4sFilePath, e);
-        }
-
-        var boxesActual = getMp4Boxes(m4sFilePath);
-        LOG.info("ACTUAL");
-        for (var box : boxesActual) LOG.info("{}", box.toString());
-
-        MovieFragmentBox mfb = (MovieFragmentBox) boxesActual.get(2);
+        constructM4S();
+        LOG.info("did construct M4S at {} to {}", bitrate, m4sFilePath);
+        var m4sFile = assertValidMp4("ACTUAL m4S FRAGMENT", m4sFilePath);
+        MovieFragmentBox mfb = (MovieFragmentBox) org.mp4parser.tools.Path.getPath(m4sFile, "moof");
         MovieFragmentHeaderBox mfhb = (MovieFragmentHeaderBox) mfb.getBoxes().get(0);
         assertEquals(sequenceNumber, mfhb.getSequenceNumber());
+
+        LOG.debug("will concatenate a test .mp4 from the initial .mp4 and first .m4s fragment");
+        Files.deleteIfExists(Path.of(testMp4Path));
+        try (
+                FileChannel fromInit = new FileInputStream(initSegPath).getChannel();
+                FileChannel fromFrag = new FileInputStream(m4sFilePath).getChannel();
+                FileChannel toTest = new FileOutputStream(testMp4Path, true).getChannel();
+        ) {
+            toTest.transferFrom(fromInit, toTest.size(), fromInit.size());
+            toTest.transferFrom(fromFrag, toTest.size(), fromFrag.size());
+            var testMp4File = assertValidMp4("ACTUAL CONCATENATED MP4", testMp4Path);
+        }
+        LOG.info("did concatenate test .mp4 at {} to {}", bitrate, testMp4Path);
     }
 
     /**
@@ -91,7 +98,7 @@ public class MP4BoxTest extends TestBase {
      */
     private void constructM4S() throws IOException, InterruptedException {
         Files.deleteIfExists(Path.of(m4sFilePath));
-        execute(String.join(" ", ImmutableList.of(
+        execute(List.of(
                 "MP4Box",
                 "-add", aacFilePath,
                 "-dash", String.valueOf(lengthSeconds * MILLIS_PER_SECOND),
@@ -102,7 +109,7 @@ public class MP4BoxTest extends TestBase {
                 "-profile", "live",
                 "-segment-name", segmentName,
                 "-v",
-                "/tmp:period=%s", String.valueOf(sequenceNumber))));
+                "/tmp:period=%s", String.valueOf(sequenceNumber)));
     }
 
 }
