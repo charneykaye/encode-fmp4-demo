@@ -33,7 +33,7 @@ mp4: Fragment sequence discontinuity detected 163497124 != 0
 
 This error happens when VLC plays the following DASH playlist:
 
-- [test5.mpd](notes/via-java-mp4parser-v2/test5.mpd)
+- [test5.mpd](notes/via-java-mp4parser-v2/test5-dynamic.mpd)
 - [test5-128k-163497124.m4s](notes/via-java-mp4parser-v2/test5-128k-163497124.m4s)
 - [test5-128k-163497125.m4s](notes/via-java-mp4parser-v2/test5-128k-163497125.m4s)
 - [test5-128k-163497126.m4s](notes/via-java-mp4parser-v2/test5-128k-163497126.m4s)
@@ -107,7 +107,7 @@ mp4file.writeContainer(fc);
 fc.close();
 ```
 
-- [test5.mpd](notes/via-java-mp4parser/test5.mpd)
+- [test5.mpd](notes/via-java-mp4parser/test5-dynamic.mpd)
 - [test5-128k-163493804.m4s](notes/via-java-mp4parser/test5-128k-163493804.m4s)
 - [test5-128k-163493805.m4s](notes/via-java-mp4parser/test5-128k-163493805.m4s)
 - [test5-128k-163493806.m4s](notes/via-java-mp4parser/test5-128k-163493806.m4s)
@@ -129,7 +129,7 @@ MP4Box \
   -frag 10000 \
   -idx ${NUM} \
   -moof-sn ${NUM} \
-  -out test5.mpd \
+  -out test5-dynamic.mpd \
   -segment-name test5-128k- \
   -segment-ext m4s \
   -single-traf \
