@@ -1,0 +1,49 @@
+File:
+  major brand:      iso5
+  minor version:    200
+  compatible brand: iso6
+  compatible brand: mp41
+  fast start:       yes
+
+Movie:
+  duration:   0 (media timescale units)
+  duration:   0 (ms)
+  time scale: 1000
+  fragments:  yes
+
+Found 1 Tracks
+Track 1:
+  flags:        3 ENABLED IN-MOVIE
+  id:           1
+  type:         Audio
+  duration: 0 ms
+  language: und
+  media:
+    sample count: 0
+    timescale:    48000
+    duration:     0 (media timescale units)
+    duration:     0 (ms)
+    bitrate (computed): 0.000 Kbps
+    sample count with fragments: 468
+    duration with fragments:     0
+    duration with fragments:     0 (ms)
+  Sample Description 0
+    Coding:       mp4a (MPEG-4 Audio)
+    Codec String: mp4a.40.2
+    Stream Type: Audio
+    Object Type: MPEG-4 Audio
+    Max Bitrate: 48000
+    Avg Bitrate: 0
+    Buffer Size: 0
+    MPEG-4 Audio Object Type: 2 (AAC Low Complexity)
+    MPEG-4 Audio Decoder Config:
+      Sampling Frequency: 48000
+      Channels: 2
+      Extension:
+        Object Type: Spectral Band Replication
+        SBR Present: no
+        PS Present:  no
+        Sampling Frequency: 0
+    Sample Rate: 48000
+    Sample Size: 16
+    Channels:    2

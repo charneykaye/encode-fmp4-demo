@@ -26,7 +26,7 @@ import static org.mp4parser.tools.CastUtils.l2i;
  Creates a plain MP4 file from a video. Plain as plain can be.
  */
 public class ChunkFragmentM4sBuilderV1 implements Mp4Builder {
-    private static final Logger LOG = LoggerFactory.getLogger(ChunkFragmentM4sBuilder.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ChunkFragmentM4sBuilderV2.class);
     private static final String BRAND_MSDH = "msdh";
     private static final String BRAND_MSIX = "msix";
     private final long subsegmentDuration;

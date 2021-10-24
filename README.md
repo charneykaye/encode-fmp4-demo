@@ -12,18 +12,18 @@ and [sannies/mp4parser](https://github.com/sannies/mp4parser) to assemble the aa
 I created this public GitHub project to reproduce the issue in its entirety.
 
 For example, here's the
-custom [ChunkFragmentM4sBuilder.java](src/main/java/com/charneykaye/ChunkFragmentM4sBuilder.java) class.
+custom [ChunkFragmentM4sBuilderV2.java](src/main/java/com/charneykaye/ChunkFragmentM4sBuilderV2.java) class.
 
 ## Java mp4parser fragment sequence discontinuity
 
 https://stackoverflow.com/questions/69686039/java-mp4parser-fragment-sequence-discontinuity
 
-This [log](notes/via-java-mp4parser-v2/ChunkFragmentM4sBuilderTest.log.txt) is
-from [ChunkFragmentM4sBuilderTest.java](src/test/java/com/charneykaye/ChunkFragmentM4sBuilderTest.java) which results in
-the concatenated test output [test-java-mp4parser.mp4](notes/via-java-mp4parser-v2/test-java-mp4parser.mp4) appears to
+This [log](notes/via-java-mp4parser-v2/ChunkFragmentM4SBuilderV2Test.log.txt) is
+from [ChunkFragmentM4SBuilderV2Test.java](src/test/java/com/charneykaye/ChunkFragmentM4SBuilderV2Test.java) which results in
+the concatenated test output [test-java-mp4parser.mp4](notes/via-java-mp4parser-v2/test-java-mp4parser-V2.mp4) appears to
 be ok:
 
-![test-java-mp4parser-ConcatenatedOutputIsEmpty.png](notes/via-java-mp4parser-v2/test-java-mp4parser-ConcatenatedOutputIsOK.png)
+![test-java-mp4parser-ConcatenatedOutputIsEmpty.png](notes/via-java-mp4parser-v2/test-java-mp4parser-V2-ConcatenatedOutputIsOK.png)
 
 However, when I play the shipped playlist and segments using VLC, I see these failures in the logs:
 
@@ -52,9 +52,9 @@ mp4file.writeContainer(fc);
 fc.close();
 ```
 
-- [ChunkFragmentM4sBuilderTest.log.txt](notes/via-java-mp4parser-v2/ChunkFragmentM4sBuilderTest.log.txt)
+- [ChunkFragmentM4sBuilderTest.log.txt](notes/via-java-mp4parser-v2/ChunkFragmentM4SBuilderV2Test.log.txt)
 - [test5-128k-IS.mp4](notes/via-java-mp4parser-v2/test5-128k-IS.mp4)
-- [test-java-mp4parser.mp4](notes/via-java-mp4parser-v2/test-java-mp4parser.mp4)
+- [test-java-mp4parser.mp4](notes/via-java-mp4parser-v2/test-java-mp4parser-V2.mp4)
 
 ### Solved by rebuilding ChunkFragmentM4sBuilder from FragmentedMp4Builder
 
@@ -79,7 +79,7 @@ my [ChunkFragmentM4sBuilderV1.java](src/main/java/com/charneykaye/ChunkFragmentM
 malformed. But I'm having a difficult time understanding *how* exactly they are malformed.
 
 It's been helpful for me to compare the two test logs side by
-side, [ChunkFragmentM4sBuilderTest.log.txt](notes/via-java-mp4parser/ChunkFragmentM4sBuilderTest.log.txt)
+side, [ChunkFragmentM4sBuilderTest.log.txt](notes/via-java-mp4parser-v1/ChunkFragmentM4SBuilderV1Test.log.txt)
 and [MP4BoxTest.log.txt](notes/via-mp4box/MP4BoxTest.log.txt).
 
 ### via Java mp4parser (malformed)
@@ -89,12 +89,12 @@ and `MovieFragmentBox`. For reference, I have used *mp4parser* to inspect a **.m
 via `ffmpeg -f hls`. This specification is
 available [here as a .yaml file](src/test/resources/test5-128k-151304042-ffmpeg.yaml)
 
-The former [log](notes/via-java-mp4parser/ChunkFragmentM4sBuilderTest.log.txt) is
-from [ChunkFragmentM4sBuilderTest.java](src/test/java/com/charneykaye/ChunkFragmentM4sBuilderTest.java) which results in
-the concatenated test output [test-java-mp4parser.mp4](notes/via-java-mp4parser/test-java-mp4parser.mp4) which is in
+The former [log](notes/via-java-mp4parser-v1/ChunkFragmentM4SBuilderV1Test.log.txt) is
+from [ChunkFragmentM4SBuilderV2Test.java](src/test/java/com/charneykaye/ChunkFragmentM4SBuilderV2Test.java) which results in
+the concatenated test output [test-java-mp4parser.mp4](notes/via-java-mp4parser-v1/test-java-mp4parser-V1.mp4) which is in
 fact empty:
 
-![test-java-mp4parser-ConcatenatedOutputIsEmpty.png](notes/via-java-mp4parser/test-java-mp4parser-ConcatenatedOutputIsEmpty.png)
+![test-java-mp4parser-ConcatenatedOutputIsEmpty.png](notes/via-java-mp4parser-v1/test-java-mp4parser-V1-ConcatenatedOutputIsEmpty.png)
 
 ```java
 Files.deleteIfExists(Path.of(m4sFilePath));
@@ -107,11 +107,11 @@ mp4file.writeContainer(fc);
 fc.close();
 ```
 
-- [test5.mpd](notes/via-java-mp4parser/test5-dynamic.mpd)
-- [test5-128k-163493804.m4s](notes/via-java-mp4parser/test5-128k-163493804.m4s)
-- [test5-128k-163493805.m4s](notes/via-java-mp4parser/test5-128k-163493805.m4s)
-- [test5-128k-163493806.m4s](notes/via-java-mp4parser/test5-128k-163493806.m4s)
-- [test5-128k-IS.mp4](notes/via-java-mp4parser/test5-128k-IS.mp4)
+- [test5.mpd](notes/via-java-mp4parser-v1/test5-dynamic.mpd)
+- [test5-128k-163493804.m4s](notes/via-java-mp4parser-v1/test5-128k-163493804.m4s)
+- [test5-128k-163493805.m4s](notes/via-java-mp4parser-v1/test5-128k-163493805.m4s)
+- [test5-128k-163493806.m4s](notes/via-java-mp4parser-v1/test5-128k-163493806.m4s)
+- [test5-128k-IS.mp4](notes/via-java-mp4parser-v1/test5-128k-IS.mp4)
 
 ### via MP4Box (ok)
 
@@ -161,7 +161,7 @@ java.lang.RuntimeException: A cast to int has gone wrong. Please contact the mp4
 	at org.mp4parser.IsoFile.<init>(IsoFile.java:57)
 	at org.mp4parser.IsoFile.<init>(IsoFile.java:52)
 	at com.charneykaye.TestBase.getMp4Boxes(TestBase.java:116)
-	at com.charneykaye.ChunkFragmentM4sBuilderTest.run(Mp4parserTest.java:78)
+	at com.charneykaye.ChunkFragmentM4SBuilderV2Test.run(Mp4parserTest.java:78)
 ```
 
 The expected box types `SegmentTypeBox`, `SegmentIndexBox`, and `MovieFragmentBox` do appear in the output:

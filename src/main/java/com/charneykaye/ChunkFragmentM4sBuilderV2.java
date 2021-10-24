@@ -47,8 +47,8 @@ import static org.mp4parser.tools.CastUtils.l2i;
 /**
  Creates a fragmented MP4 file.
  */
-public record ChunkFragmentM4sBuilder(int sequenceNumber) implements Mp4Builder {
-    private static final Logger LOG = LoggerFactory.getLogger(ChunkFragmentM4sBuilder.class);
+public record ChunkFragmentM4sBuilderV2(int sequenceNumber) implements Mp4Builder {
+    private static final Logger LOG = LoggerFactory.getLogger(ChunkFragmentM4sBuilderV2.class);
 
     private static long getTrackDuration(Movie movie, Track track) {
         return (track.getDuration() * movie.getTimescale()) / track.getTrackMetaData().getTimescale();
