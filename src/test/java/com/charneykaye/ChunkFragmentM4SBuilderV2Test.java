@@ -1,4 +1,4 @@
-// Copyright (c) Charney Kaye Inc. (https://charneykaye.com) All Rights Reserved.
+// Copyright (c) Charney Kaye Inc. (https://nickcharneykaye.com) All Rights Reserved.
 package com.charneykaye;
 
 import org.junit.Before;
